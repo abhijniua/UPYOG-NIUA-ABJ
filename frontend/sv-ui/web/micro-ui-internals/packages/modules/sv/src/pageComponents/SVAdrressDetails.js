@@ -400,7 +400,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
 
   useEffect(() => {
     if (userType === "citizen") {
-      goNext();
+        goNext();
     }
   }, [pincode, city, locality, houseNo, landmark, addressline1, addressline2, ccity, chouseNo, clocality, caddressline1, caddressline2]);
 
@@ -434,7 +434,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
               ValidationRequired={true}
               {...(validation = {
                 isRequired: true,
-                pattern: "^[a-zA-z0-9- ]*$",
+                pattern: "^[a-zA-Z\\d\\s\\-]+$",
                 type: "text",
                 title: t("SV_HOUSE_NO_ERROR_MESSAGE"),
               })}
@@ -454,7 +454,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
               ValidationRequired={true}
               {...(validation = {
                 isRequired: false,
-                pattern: "^[a-zA-Z,-/ ]*$",
+                pattern: "^[a-zA-Z\\d\\s\\-]+$",
                 type: "textarea",
                 title: t("SV_LANDMARK_ERROR_MESSAGE"),
               })}
@@ -475,7 +475,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
               ValidationRequired={true}
               {...(validation = {
                 isRequired: false,
-                pattern: "^[a-zA-Z,-/ ]*$",
+                pattern: "^[a-zA-Z\\d\\s\\-]+$",
                 type: "textarea",
                 title: t("SV_LANDMARK_ERROR_MESSAGE"),
               })}
@@ -494,7 +494,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
               ValidationRequired={true}
               {...(validation = {
                 isRequired: false,
-                pattern: "^[a-zA-Z,- ]*$",
+                pattern: "^[a-zA-Z\\d\\s\\-]+$",
                 type: "text",
                 title: t("SV_LANDMARK_ERROR_MESSAGE"),
               })}
@@ -594,7 +594,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
               ValidationRequired={false}
               {...(validation = {
                 isRequired: true,
-                pattern: "^[a-zA-z0-9- ]*$",
+                pattern: "^[a-zA-Z\\d\\s\\-]+$",
                 type: "text",
                 title: t("SV_HOUSE_NO_ERROR_MESSAGE"),
               })}
@@ -614,7 +614,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
               ValidationRequired={true}
               {...(validation = {
                 isRequired: false,
-                pattern: "^[a-zA-Z,-/ ]*$",
+                pattern: "^[a-zA-Z\\d\\s\\-]+$",
                 type: "textarea",
                 title: t("SV_LANDMARK_ERROR_MESSAGE"),
               })}
@@ -635,7 +635,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
               ValidationRequired={true}
               {...(validation = {
                 isRequired: false,
-                pattern: "^[a-zA-Z,-/ ]*$",
+                pattern: "^[a-zA-Z\\d\\s\\-]+$",
                 type: "textarea",
                 title: t("SV_LANDMARK_ERROR_MESSAGE"),
               })}
@@ -654,7 +654,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
               ValidationRequired={true}
               {...(validation = {
                 isRequired: false,
-                pattern: "^[a-zA-Z,- ]*$",
+                pattern: "^[a-zA-Z\\d\\s\\-]+$",
                 type: "textarea",
                 title: t("SV_LANDMARK_ERROR_MESSAGE"),
               })}

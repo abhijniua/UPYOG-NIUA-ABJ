@@ -37,7 +37,7 @@ const SVRequiredDoc = ({ t, config, onSelect, userType, formData }) => {
                         {index + 1}. {t(stringReplaceAll(code, ".", "_"))}
                       </CardSubHeader>
                       {dropdownData.map((dropdownData, dropdownIndex) => (
-                        <CardText className={"primaryColor"}>
+                        <CardText className={"primaryColor"} key={dropdownIndex}>
                           {`${dropdownIndex + 1}`}. {t(stringReplaceAll(dropdownData?.code, ".", "_"))}
                         </CardText>
                       ))}

@@ -69,7 +69,7 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
                     isInfo={""}
                   />
                 );
-              } else return <React.Fragment />;
+              } else return <React.Fragment key={`empty-fragment-${code}-${index}`} />;
             })}
         </div>
       </div>
