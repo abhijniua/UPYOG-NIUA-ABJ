@@ -1,5 +1,6 @@
 package org.upyog.Automation.Modules.StreetVending;
 
+import java.io.File;
 import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -269,12 +270,18 @@ public class CreateApplication {
     private void uploadDocuments(WebDriver driver, WebDriverWait wait, JavascriptExecutor js) throws InterruptedException {
         logger.info("Uploading Documents");
         
-        String[] filePaths = {
-            "/Users/kaveri/Downloads/1765952287364QizTgOLXYI.png",
-            "/Users/kaveri/Downloads/Dashboard service.pdf",
-            "/Users/kaveri/Downloads/Dashboard service.pdf",
-            "/Users/kaveri/Downloads/Dashboard service.pdf"
+        String[] relativePaths = {
+            ConfigReader.get("sv.document.identity.proof"),
+            ConfigReader.get("sv.document.address.proof"),
+            ConfigReader.get("sv.document.business.proof"),
+            ConfigReader.get("sv.document.business.proof") // Using business proof for 4th document
         };
+        
+        // Convert relative paths to absolute paths
+        String[] filePaths = new String[relativePaths.length];
+        for (int i = 0; i < relativePaths.length; i++) {
+            filePaths[i] = getAbsolutePath(relativePaths[i]);
+        }
         
         // Get all dropdowns in document section
         List<WebElement> allDropdowns = driver.findElements(By.cssSelector("div.select svg.cp"));
@@ -300,6 +307,33 @@ public class CreateApplication {
         
         // Click Save & Next
         clickButtonByHeader(driver, wait, "Save & Next");
+    }
+    
+    /**
+     * Converts relative path to absolute path
+     */
+    private String getAbsolutePath(String relativePath) {
+        if (relativePath == null || relativePath.isEmpty()) {
+            throw new RuntimeException("File path is null or empty");
+        }
+        
+        // If already absolute path, return as is
+        File file = new File(relativePath);
+        if (file.isAbsolute()) {
+            return relativePath;
+        }
+        
+        // Convert relative path to absolute path
+        String projectRoot = System.getProperty("user.dir");
+        String absolutePath = new File(projectRoot, relativePath).getAbsolutePath();
+        
+        // Verify file exists
+        File absoluteFile = new File(absolutePath);
+        if (!absoluteFile.exists()) {
+            throw new RuntimeException("File not found: " + absolutePath);
+        }
+        
+        return absolutePath;
     }
 
     /**
