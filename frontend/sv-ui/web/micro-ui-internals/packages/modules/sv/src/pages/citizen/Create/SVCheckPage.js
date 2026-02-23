@@ -18,7 +18,6 @@ import _ from "lodash";
 const ActionButton = ({ jumpTo }) => {
   const { t } = useTranslation();
   const navigate = Digit.Hooks.useCustomNavigate();
-  console.log("navigate", navigate);
   function routeTo() {
     navigate(jumpTo);
   }
