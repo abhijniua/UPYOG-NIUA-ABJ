@@ -21,9 +21,9 @@ const enabledModules = [
 ];
 
 const initTokens = (stateCode) => {
-  const userType = window.sessionStorage.getItem("userType") || process.env.REACT_APP_USER_TYPE || "CITIZEN";
+  const userType = window.sessionStorage.getItem("userType") || import.meta.env.VITE_USER_TYPE || "CITIZEN";
 
-  const token = window.localStorage.getItem("token")|| process.env[`REACT_APP_${userType}_TOKEN`];
+  const token = window.localStorage.getItem("token") || (userType === "CITIZEN" ? import.meta.env.VITE_CITIZEN_TOKEN : import.meta.env.VITE_EMPLOYEE_TOKEN);
  
   const citizenInfo = window.localStorage.getItem("Citizen.user-info")
  
