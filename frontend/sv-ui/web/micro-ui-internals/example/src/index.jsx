@@ -4,7 +4,6 @@ import ReactDOM from "react-dom/client";
 import { initLibraries } from "@nudmcdgnpm/digit-ui-libraries";
 import { PaymentModule } from "@upyog/digit-ui-module-common";
 import { StreetVendingUI } from "@upyog/digit-ui-module-core";
-import { BillsModule } from "@upyog/digit-ui-module-bills";
 import "@nudmcdgnpm/cnd-css";
 import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
 import { SVComponents, SVLinks, SVModule } from "@nudmcdgnpm/upyog-ui-module-sv";
@@ -50,7 +49,6 @@ const initTokens = (stateCode) => {
 const initSVUI = () => {
   window?.Digit.ComponentRegistryService.setupRegistry({
   PaymentModule,
-  BillsModule,
   SVModule,
   SVLinks,
   ...SVComponents,

@@ -1,5 +1,29 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import fs from "fs";
+import path from "path";
+
+function smartResolvePlugin() {
+  return {
+    name: "smart-resolve",
+    resolveId(id) {
+      try {
+        const pkgDir = path.join(process.cwd(), "node_modules", id);
+        const pkgPath = path.join(pkgDir, "package.json");
+        if (!fs.existsSync(pkgPath)) return null;
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+        if (pkg.module && fs.existsSync(path.join(pkgDir, pkg.module))) {
+          return path.join(pkgDir, pkg.module);
+        }
+        if (pkg.main) {
+          return path.join(pkgDir, pkg.main);
+        }
+      } catch {
+        return null;
+      }
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -34,34 +58,38 @@ export default defineConfig(({ mode }) => {
   );
 
   return {
-    plugins: [react({ include: /\.(jsx|js)$/ })],
+    plugins: [react({ include: /\.(jsx|js)$/ }), smartResolvePlugin()],
     base: "/sv-ui/",
     server: {
       port: 3000,
       proxy: proxyConfig,
+      watch: {
+        ignored: ["!**/micro-ui-internals/packages/**"],
+      },
     },
     build: {
       sourcemap: true,
       outDir: "build",
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
     },
     define: {
       "process.env": {},
     },
     envPrefix: "VITE_",
-    resolve: {
-      mainFields: ["main", "module"],
-    },
     optimizeDeps: {
+      force: true,
       include: [
-        "@nudmcdgnpm/upyog-ui-react-components-lts",
-        "@upyog/digit-ui-module-bills",
-        "@upyog/digit-ui-module-common",
-        "@upyog/digit-ui-module-core",
-        "@upyog/digit-ui-module-engagement",
-        "@nudmcdgnpm/upyog-ui-module-sv",
-        "@nudmcdgnpm/digit-ui-libraries",
+        "pdfmake",
+        "pdfmake/build/pdfmake",
+        "pdfmake/build/vfs_fonts",
+        "jspdf",
+        "jspdf-autotable",
       ],
-      exclude: [],
+      esbuildOptions: {
+        loader: { ".js": "jsx" },
+      },
     },
   };
 });
