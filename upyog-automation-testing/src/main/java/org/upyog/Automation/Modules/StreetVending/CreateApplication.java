@@ -11,15 +11,20 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.upyog.Automation.Utils.ConfigReader;
-import org.upyog.Automation.Utils.DriverFactory;
+import org.upyog.Automation.config.WebDriverFactory;
+import java.time.Duration;
 
 
 @Component
 public class CreateApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(CreateApplication.class);
+    
+    @Autowired
+    private WebDriverFactory webDriverFactory;
 
     //@PostConstruct
     public void svCreateApplication() {
@@ -34,9 +39,9 @@ public class CreateApplication {
 
         logger.info("Street Vending Registration by Citizen");
 
-        // Initialize WebDriver using DriverFactory
-        WebDriver driver = DriverFactory.createChromeDriver();
-        WebDriverWait wait = DriverFactory.createWebDriverWait(driver);
+        // Initialize WebDriver using WebDriverFactory
+        WebDriver driver = webDriverFactory.createDriver();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         JavascriptExecutor js = (JavascriptExecutor) driver;
         Actions actions = new Actions(driver);
 
@@ -57,8 +62,7 @@ public class CreateApplication {
             logger.error("Exception in Street Vending Registration: {}", e.getMessage());
             e.printStackTrace();
         } finally {
-            // Uncomment to close browser after test
-            // driver.quit();
+            // driver.quit(); // Commented out to keep browser open for observation
         }
     }
 

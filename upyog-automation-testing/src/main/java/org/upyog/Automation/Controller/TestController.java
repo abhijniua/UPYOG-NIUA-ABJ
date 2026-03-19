@@ -1,10 +1,13 @@
 package org.upyog.Automation.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.upyog.Automation.Service.CitizenTestService;
 import org.upyog.Automation.Service.EmployeeTestService;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/test")
@@ -17,8 +20,11 @@ public class TestController {
     @Autowired
     private EmployeeTestService employeeTestService;
 
+    @Value("${novnc.url:http://localhost:7900}")
+    private String novncUrl;
+
     @PostMapping("/citizen")
-    public ResponseEntity<String> runCitizenTest(@RequestBody CitizenTestRequest request) {
+    public ResponseEntity<Map<String, String>> runCitizenTest(@RequestBody CitizenTestRequest request) {
         String result = citizenTestService.runCitizenSideTest(
                 request.getBaseUrl(),
                 request.getModuleName(),
@@ -26,11 +32,15 @@ public class TestController {
                 request.getOtp(),
                 request.getCityName()
         );
-        return ResponseEntity.ok(result);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", result);
+        response.put("viewerUrl", novncUrl);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/employee")
-    public ResponseEntity<String> runEmployeeTest(@RequestBody EmployeeTestRequest request) {
+    public ResponseEntity<Map<String, String>> runEmployeeTest(@RequestBody EmployeeTestRequest request) {
         String result = employeeTestService.runEmployeeTest(
                 request.getBaseUrl(),
                 request.getModuleName(),
@@ -38,7 +48,11 @@ public class TestController {
                 request.getPassword(),
                 request.getApplicationNumber()
         );
-        return ResponseEntity.ok(result);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", result);
+        response.put("viewerUrl", novncUrl);
+        return ResponseEntity.ok(response);
     }
 
     // Request DTOs

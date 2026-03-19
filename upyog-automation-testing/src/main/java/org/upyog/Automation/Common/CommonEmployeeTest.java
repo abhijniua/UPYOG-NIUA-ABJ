@@ -2,32 +2,35 @@ package org.upyog.Automation.Common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 import org.upyog.Automation.Modules.Pet.PetApplicationEmp;
 import org.upyog.Automation.Modules.StreetVending.SvEmp;
 import org.upyog.Automation.Modules.TradeLicense.TradeLicenseEmp;
 
-/**
- * Common entry point for all employee module tests
- * Routes to appropriate module based on moduleName
- */
+@Component
 public class CommonEmployeeTest {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonEmployeeTest.class);
+
+    @Autowired
+    private ApplicationContext context;
 
     public void runEmployeeTest(String baseUrl, String moduleName, String username, String password, String applicationNumber) {
         logger.info("Starting {} employee test", moduleName);
 
         try {
             if ("STREET_VENDING".equalsIgnoreCase(moduleName)) {
-                SvEmp svEmp = new SvEmp();
+                SvEmp svEmp = context.getBean(SvEmp.class);
                 svEmp.InboxEmpSv(baseUrl, username, password, applicationNumber);
 
             } else if ("PET_REGISTRATION".equalsIgnoreCase(moduleName)) {
-                PetApplicationEmp petEmp = new PetApplicationEmp();
+                PetApplicationEmp petEmp = context.getBean(PetApplicationEmp.class);
                 petEmp.petInboxEmp(baseUrl, username, password, applicationNumber);
 
             } else if ("TRADE_LICENSE".equalsIgnoreCase(moduleName)) {
-                TradeLicenseEmp tlEmp = new TradeLicenseEmp();
+                TradeLicenseEmp tlEmp = context.getBean(TradeLicenseEmp.class);
                 tlEmp.tlInboxEmp(baseUrl, username, password, applicationNumber);
 
             } else {
