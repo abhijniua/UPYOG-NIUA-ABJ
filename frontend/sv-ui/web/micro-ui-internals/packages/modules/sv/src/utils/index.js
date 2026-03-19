@@ -674,7 +674,7 @@ export function SVDocumnetPreview({documents, titleStyles, isSendBackFlow = fals
   const SvPDFSvg = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect width="24" height="24" rx="4" fill="#D32F2F"/>
-      <text x="0" y="16" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#FFFFFF">PDF</text>
+      <text x="0" y="16" fontFamily="Arial, sansSerif" fontSize="12" fontWeight="bold" fill="#FFFFFF">PDF</text>
     </svg>
   );
   

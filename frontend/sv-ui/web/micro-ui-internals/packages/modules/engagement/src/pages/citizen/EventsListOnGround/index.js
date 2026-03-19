@@ -1,12 +1,12 @@
-import { Card, CardCaption, Header, Loader, OnGroundEventCard } from "@nudmcdgnpm/digit-ui-react-components";
+import { Card, CardCaption, Header, Loader, OnGroundEventCard } from "@nudmcdgnpm/upyog-ui-react-components-lts";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Redirect, useHistory, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const EventsListOnGround = ({ variant, parentRoute }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const history = useHistory();
+  const navigate = Digit.Hooks.useCustomNavigate();
 
   const tenantId = Digit.ULBService.getCitizenCurrentTenant();
   const { data: { unreadCount: preVisitUnseenEventsCount } = {}, isSuccess: preVisitUnseenEventsCountLoaded } = Digit.Hooks.useNotificationCount({
@@ -18,16 +18,18 @@ const EventsListOnGround = ({ variant, parentRoute }) => {
 
   const { data: EventsData, isLoading: EventsDataLoading } = Digit.Hooks.useEvents({ tenantId, variant });
 
-  if (!Digit.UserService?.getUser()?.access_token) {
-    localStorage.clear();
-    sessionStorage.clear();
-    return <Redirect to={{ pathname: `/sv-ui/citizen/login`, state: { from: location.pathname + location.search } }} />;
-  }
+   if (!Digit.UserService?.getUser()?.access_token) {
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate("/sv-ui/citizen/login", { state: { from: location.pathname + location.search }, replace: true });
+      return null;
+    }
+
 
   if (EventsDataLoading || !preVisitUnseenEventsCountLoaded) return <Loader />;
 
   function onEventCardClick(id) {
-    history.push(parentRoute + "/events/details/" + id);
+    navigate(parentRoute + "/events/details/" + id);
   }
 
   return (
