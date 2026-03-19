@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "microbundle-crl --compress --no-sourcemap --format cjs",
+    "build": "microbundle-crl --compress --no-sourcemap --format modern, cjs",
     "start": "microbundle-crl watch --no-compress --format modern,cjs",
     "prepublish": "yarn build"
   },
@@ -19,8 +19,7 @@
   "devDependencies": {
     "gh-pages": "2.2.0",
     "microbundle-crl": "0.13.11",
-    "react-dom": "19.0.0",
-    "react-scripts": "5.0.1"
+    "react-dom": "19.0.0"
   },
   "dependencies": {
     "axios": "^1.6.0",
@@ -40,11 +39,5 @@
     "react-router-dom": "6.28.0",
     "redux": "4.1.2",
     "xlsx": "0.17.5"
-  },
-  "resolutions": {
-    "**/babel-loader": "8.2.3",
-    "**/@babel/core": "7.16.0",
-    "**/@babel/preset-env": "7.16.0",
-    "**/@babel/plugin-transform-modules-commonjs": "7.16.0"
   }
 }

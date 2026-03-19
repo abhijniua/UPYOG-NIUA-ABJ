@@ -1,0 +1,104 @@
+import { defineConfig, loadEnv } from "vite";
+import react from "@vitejs/plugin-react";
+import fs from "fs";
+import path from "path";
+
+const CJS_ONLY_PACKAGES = [
+  "@nudmcdgnpm/upyog-ui-react-components-lts",
+  "@upyog/digit-ui-module-bills",
+];
+
+function smartResolvePlugin() {
+  return {
+    name: "smart-resolve",
+    resolveId(id) {
+      try {
+        const pkgDir = path.join(process.cwd(), "node_modules", id);
+        const pkgPath = path.join(pkgDir, "package.json");
+        if (!fs.existsSync(pkgPath)) return null;
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+        if (CJS_ONLY_PACKAGES.includes(id)) {
+          return path.join(pkgDir, pkg.main);
+        }
+        if (pkg.module) {
+          const modernFile = path.join(pkgDir, pkg.module);
+          if (fs.existsSync(modernFile)) return modernFile;
+        }
+        if (pkg.main) {
+          return path.join(pkgDir, pkg.main);
+        }
+      } catch {
+        return null;
+      }
+    },
+  };
+}
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  const apiTarget = env.VITE_PROXY_API || "https://niuatt.niua.in";
+
+  const proxyRoutes = [
+    "/access/v1/actions/mdms",
+    "/egov-mdms-service",
+    "/egov-location",
+    "/mdms-v2",
+    "/localization",
+    "/egov-workflow-v2",
+    "/filestore",
+    "/user-otp",
+    "/user",
+    "/billing-service",
+    "/collection-services",
+    "/pdf-service",
+    "/pg-service",
+    "/inbox",
+    "/egov-hrms",
+    "/egov-user-event",
+    "/sv-services",
+    "/employee-dashboard",
+  ];
+
+  const proxyConfig = Object.fromEntries(
+    proxyRoutes.map((route) => [
+      route,
+      { target: apiTarget, changeOrigin: true },
+    ])
+  );
+
+  return {
+    plugins: [react({ include: /\.(jsx|js)$/ }), smartResolvePlugin()],
+    base: "/sv-ui/",
+    server: {
+      port: 3000,
+      proxy: proxyConfig,
+      watch: {
+        ignored: ["!**/packages/**"],
+      },
+    },
+    build: {
+      sourcemap: true,
+      outDir: "build",
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
+    },
+    define: {
+      "process.env": {},
+    },
+    envPrefix: "VITE_",
+    optimizeDeps: {
+      force: true,
+      include: [
+        "pdfmake",
+        "pdfmake/build/pdfmake",
+        "pdfmake/build/vfs_fonts",
+        "jspdf",
+        "jspdf-autotable",
+      ],
+      esbuildOptions: {
+        loader: { ".js": "jsx" },
+      },
+    },
+  };
+});
