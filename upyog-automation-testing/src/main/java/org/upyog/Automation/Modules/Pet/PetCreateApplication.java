@@ -1,5 +1,6 @@
 package org.upyog.Automation.Modules.Pet;
 
+import java.io.File;
 import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -9,13 +10,18 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.upyog.Automation.Utils.ConfigReader;
-import org.upyog.Automation.Utils.DriverFactory;
+import org.upyog.Automation.config.WebDriverFactory;
+import java.time.Duration;
 
 
 @Component
 public class PetCreateApplication {
+
+    @Autowired
+    private WebDriverFactory webDriverFactory;
 
     /**
      * Main test method that executes the complete pet registration workflow
@@ -33,13 +39,13 @@ public class PetCreateApplication {
     public void PetApptest(String baseUrl, String moduleName, String mobileNumber, String otp, String cityName) {
         System.out.println("Pet Registration by Citizen");
 
-        // Initialize WebDriver using DriverFactory
-        WebDriver driver = DriverFactory.createChromeDriver();
-        WebDriverWait wait = DriverFactory.createWebDriverWait(driver);
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        Actions actions = new Actions(driver);
-
+        WebDriver driver = null;
         try {
+            // Initialize WebDriver using WebDriverFactory
+            driver = webDriverFactory.createDriver();
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            Actions actions = new Actions(driver);
             // STEP 1: User Login Process
             driver.get(baseUrl);
             
@@ -52,7 +58,7 @@ public class PetCreateApplication {
                     By.cssSelector("input[type='checkbox'].form-field")));
             if (!checkbox.isSelected()) {
                 js.executeScript("arguments[0].click();", checkbox);
-                Thread.sleep(1000);
+                wait.until(ExpectedConditions.elementToBeSelected(checkbox));
             }
 
             // Click Next to proceed to OTP screen
@@ -85,7 +91,7 @@ public class PetCreateApplication {
                     WebElement radioInput = option.findElement(By.cssSelector("input[type='radio']"));
                     if (!radioInput.isSelected()) {
                         js.executeScript("arguments[0].click();", radioInput);
-                        Thread.sleep(1000);
+                        wait.until(ExpectedConditions.elementToBeSelected(radioInput));
                     }
                     break;
                 }
@@ -135,7 +141,7 @@ public class PetCreateApplication {
                     By.cssSelector("input[type='radio'][name='selectBirthAdoption']")));
             if (!birthAdoptionRadios.isEmpty() && !birthAdoptionRadios.get(0).isSelected()) {
                 js.executeScript("arguments[0].click();", birthAdoptionRadios.get(0));
-                Thread.sleep(1000);
+                wait.until(ExpectedConditions.elementToBeSelected(birthAdoptionRadios.get(0)));
             }
 
             // Fill pet information fields
@@ -239,12 +245,15 @@ public class PetCreateApplication {
             trackButton.click();
 
             System.out.println("Test completed successfully!");
-            Thread.sleep(50000); // Keep browser open for observation
+            Thread.sleep(5000); // Brief pause to observe results
         } catch (Exception e) {
+            System.err.println("Test failed with error: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            // Uncomment to close browser after test
-            // driver.quit();
+            if (driver != null) {
+                driver.quit();
+                System.out.println("WebDriver closed successfully");
+            }
         }
     }
 
@@ -257,9 +266,16 @@ public class PetCreateApplication {
      * @param value Value to enter in the field
      */
     private void fillInput(WebDriverWait wait, String fieldName, String value) {
-        WebElement input = wait.until(ExpectedConditions.elementToBeClickable(By.name(fieldName)));
-        input.clear();
-        input.sendKeys(value);
+        try {
+            WebElement input = wait.until(ExpectedConditions.elementToBeClickable(By.name(fieldName)));
+            ((JavascriptExecutor) wait.until(d -> d)).executeScript("arguments[0].scrollIntoView(true);", input);
+            input.clear();
+            input.sendKeys(value);
+            System.out.println("Filled field '" + fieldName + "' with value: " + value);
+        } catch (Exception e) {
+            System.err.println("Error filling field '" + fieldName + "': " + e.getMessage());
+            throw new RuntimeException("Failed to fill input field: " + fieldName, e);
+        }
     }
 
     /**
@@ -275,17 +291,25 @@ public class PetCreateApplication {
             if (dropdowns.size() > dropdownIndex) {
                 WebElement dropdown = dropdowns.get(dropdownIndex);
                 WebElement button = dropdown.findElement(By.tagName("svg"));
-                actions.moveToElement(button).click().perform();
-                Thread.sleep(500);
                 
+                // Scroll to element and click
+                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
+                wait.until(ExpectedConditions.elementToBeClickable(button));
+                actions.moveToElement(button).click().perform();
+                
+                // Wait for dropdown to open
                 wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("jk-dropdown-unique")));
+                
                 WebElement firstOption = wait.until(ExpectedConditions.elementToBeClickable(
                         By.cssSelector("#jk-dropdown-unique .profile-dropdown--item:first-child")));
                 actions.moveToElement(firstOption).click().perform();
-                Thread.sleep(1000);
+                
+                // Wait for dropdown to close
+                wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("jk-dropdown-unique")));
             }
         } catch (Exception e) {
-            System.out.println("Error selecting dropdown option: " + e.getMessage());
+            System.err.println("Error selecting dropdown option at index " + dropdownIndex + ": " + e.getMessage());
+            throw new RuntimeException("Failed to select dropdown option", e);
         }
     }
 
@@ -380,7 +404,7 @@ public class PetCreateApplication {
                 WebElement fileInput = fileInputs.get(i);
                 js.executeScript("arguments[0].scrollIntoView(true);", fileInput);
                 Thread.sleep(100);
-                fileInput.sendKeys(filePaths[i]);
+                fileInput.sendKeys(getAbsolutePath(filePaths[i]));
                 Thread.sleep(100);
             } catch (Exception e) {
                 System.out.println("Error uploading file " + i + ": " + e.getMessage());
@@ -392,10 +416,41 @@ public class PetCreateApplication {
             WebElement petPhotoInput = driver.findElement(By.cssSelector("input[type='file']#upload"));
             js.executeScript("arguments[0].scrollIntoView(true);", petPhotoInput);
             Thread.sleep(100);
-            petPhotoInput.sendKeys(ConfigReader.get("document.pet.photo"));
+            petPhotoInput.sendKeys(getAbsolutePath(ConfigReader.get("document.pet.photo")));
             Thread.sleep(100);
         } catch (Exception e) {
             System.out.println("Error uploading pet photo: " + e.getMessage());
         }
+    }
+
+    /**
+     * Converts relative path to absolute path for file uploads
+     * Selenium requires absolute paths for sendKeys() on file inputs
+     */
+    private String getAbsolutePath(String relativePath) {
+        if (relativePath == null || relativePath.trim().isEmpty()) {
+            throw new IllegalArgumentException("File path cannot be null or empty");
+        }
+        
+        File file = new File(relativePath);
+        if (!file.exists()) {
+            // Try to find file in resources directory
+            try {
+                String resourcePath = relativePath.replace("src/main/resources/", "");
+                java.net.URL resource = getClass().getClassLoader().getResource(resourcePath);
+                if (resource != null) {
+                    file = new File(resource.getPath());
+                }
+            } catch (Exception e) {
+                System.err.println("Error resolving resource path: " + e.getMessage());
+            }
+            
+            if (!file.exists()) {
+                throw new RuntimeException("File not found: " + relativePath);
+            }
+        }
+        
+        System.out.println("Using file: " + file.getAbsolutePath());
+        return file.getAbsolutePath();
     }
 }

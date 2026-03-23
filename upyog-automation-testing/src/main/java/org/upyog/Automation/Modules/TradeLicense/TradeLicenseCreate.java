@@ -1,5 +1,6 @@
 package org.upyog.Automation.Modules.TradeLicense;
 
+import java.io.File;
 import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -8,8 +9,11 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.upyog.Automation.Utils.ConfigReader;
-import org.upyog.Automation.Utils.DriverFactory;
+import org.upyog.Automation.config.WebDriverFactory;
+import java.time.Duration;
 
 /**
  * Automated test class for UPYOG Trade License Registration
@@ -20,8 +24,11 @@ import org.upyog.Automation.Utils.DriverFactory;
  * - Owner details and document uploads
  * - Application submission
  */
-//@Component
+@Component
 public class TradeLicenseCreate {
+
+    @Autowired
+    private WebDriverFactory webDriverFactory;
 
     /**
      * Main test method for trade license registration workflow
@@ -39,9 +46,9 @@ public class TradeLicenseCreate {
     public void TradeLicenceCitizenReg(String baseUrl, String moduleName, String mobileNumber, String otp, String cityName) {
         System.out.println("Trade license by Citizen");
 
-        // Initialize WebDriver using DriverFactory
-        WebDriver driver = DriverFactory.createChromeDriver();
-        WebDriverWait wait = DriverFactory.createWebDriverWait(driver);
+        // Initialize WebDriver using WebDriverFactory
+        WebDriver driver = webDriverFactory.createDriver();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         JavascriptExecutor js = (JavascriptExecutor) driver;
         Actions actions = new Actions(driver);
 
@@ -80,8 +87,7 @@ public class TradeLicenseCreate {
             System.out.println("Exception in Trade License Registration: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            // Uncomment to close browser after test
-            // driver.quit();
+            // driver.quit(); // Commented out to keep browser open for observation
         }
     }
 
@@ -319,7 +325,7 @@ public class TradeLicenseCreate {
     private void uploadDocuments(WebDriver driver, WebDriverWait wait, JavascriptExecutor js) throws InterruptedException {
         System.out.println("Uploading Documents");
         
-        String filePath = ConfigReader.get("document.identity.proof");
+        String filePath = ConfigReader.get("tl.document.identity.proof");
         
         // Upload first two documents with next clicks
         uploadDocumentAndClickNext(driver, wait, filePath);
@@ -329,7 +335,7 @@ public class TradeLicenseCreate {
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("tl-doc")));
         js.executeScript("arguments[0].scrollIntoView({block: 'center'});", fileInput);
         Thread.sleep(200);
-        fileInput.sendKeys(filePath);
+        fileInput.sendKeys(getAbsolutePath(filePath));
         System.out.println("Third document uploaded");
         
         clickButtonByHeader(driver, wait, "Next");
@@ -596,7 +602,7 @@ public class TradeLicenseCreate {
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("tl-doc")));
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", fileInput);
         Thread.sleep(200);
-        fileInput.sendKeys(filePath);
+        fileInput.sendKeys(getAbsolutePath(filePath));
         System.out.println("Document uploaded: " + filePath);
 
         WebElement nextButton = wait.until(ExpectedConditions.elementToBeClickable(
@@ -637,5 +643,17 @@ public class TradeLicenseCreate {
         js.executeScript("arguments[0].scrollIntoView({block: 'center'});", nextButton);
         Thread.sleep(200);
         nextButton.click();
+    }
+
+    /**
+     * Converts relative path to absolute path for file uploads
+     * Selenium requires absolute paths for sendKeys() on file inputs
+     */
+    private String getAbsolutePath(String relativePath) {
+        File file = new File(relativePath);
+        if (!file.exists()) {
+            throw new RuntimeException("File not found: " + relativePath);
+        }
+        return file.getAbsolutePath();
     }
 }
